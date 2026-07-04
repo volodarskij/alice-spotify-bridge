@@ -38,6 +38,7 @@ librespot-bridge получает команду → аудио течёт по 
 
 Подробная архитектура: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) и [bridge/SPEC.md](bridge/SPEC.md).
 Гайд по созданию навыка Алисы: [docs/ALICE_SKILL_GUIDE.md](docs/ALICE_SKILL_GUIDE.md).
+Сервис-независимая спецификация стриминга на Станцию (Glagol, HTTP-поток, тайминги): [yandex-station-local-streaming](https://github.com/volodarskij/yandex-station-local-streaming).
 
 ## Что понадобится
 
