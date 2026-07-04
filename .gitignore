@@ -1,0 +1,13 @@
+# Secrets — never commit these
+.env
+spotify_tokens.json
+credentials.json
+*.pem
+*.key
+
+# Build artifacts
+bridge/target/
+node_modules/
+
+# Logs
+*.log

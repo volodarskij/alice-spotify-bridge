@@ -1,0 +1,42 @@
+#!/bin/sh /etc/rc.common
+# Spotify Connect → Yandex Station bridge (Rust librespot-bridge)
+# OpenWrt procd service template.
+#
+# Fill in before use:
+#   YANDEX_SESSION_ID    — Yandex Session_id cookie (see docs/ALICE_SKILL_GUIDE.md, section "Session_id")
+#   YANDEX_DEVICE_ID     — Station device_id (from Quasar: https://quasar.yandex.ru/glagol/device_list)
+#   SPOTIFY_ACCESS_TOKEN — one-time OAuth token for the FIRST start only; after the first
+#                          successful auth librespot caches reusable credentials in --cache-dir
+#                          and the flag can be removed.
+START=99
+USE_PROCD=1
+
+PROG=/usr/local/bin/librespot-bridge
+
+start_service() {
+    # Wait for the SOCKS proxy to be ready (proxy needs time after boot).
+    # Remove this block if you don't route Yandex/Spotify API calls through SOCKS.
+    local retries=0
+    while ! curl -s -x socks5h://127.0.0.1:1070 --max-time 3 https://quasar.yandex.ru > /dev/null 2>&1; do
+        retries=$((retries + 1))
+        [ $retries -ge 20 ] && { logger -t librespot_bridge "SOCKS proxy not ready after 60s, starting anyway"; break; }
+        sleep 3
+    done
+
+    procd_open_instance
+    procd_set_param command $PROG \
+        --session-id "YANDEX_SESSION_ID" \
+        --device-id "YANDEX_DEVICE_ID" \
+        --station-ip 192.168.1.21 \
+        --sbc-ip 192.168.1.19 \
+        --bridge-port 8888 \
+        --bitrate 320 \
+        --mp3-bitrate 192 \
+        --cache-dir /root/.librespot-cache \
+        --access-token "SPOTIFY_ACCESS_TOKEN"
+    procd_set_param env RUST_LOG=info
+    procd_set_param respawn 60 10 0
+    procd_set_param stdout 1
+    procd_set_param stderr 1
+    procd_close_instance
+}
